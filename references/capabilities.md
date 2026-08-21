@@ -53,9 +53,38 @@ and timezone-aware `observed_at`. `member_profile_id` is optional. Resolve the
 account with `assets_read`; never guess it. A separate confirmed update needs a
 new snapshot ID and idempotency key.
 
+## `assets_create`
+
+Required scope: `assets:update`.
+
+Create exactly one asset account and its initial dated snapshot after explicit
+confirmation. First use `assets_read` to avoid accidental duplicates and
+`categories_read` to resolve an active compatible asset category. Required
+arguments are `account_id`, `snapshot_id`, `idempotency_key`, `name`, `kind`,
+`category_id`, `amount_in_fen`, and timezone-aware `observed_at`.
+
+`kind` is `asset` or `liability`. Assets require `asset_group` from `financial`,
+`living`, `interest`, or `receivable`; liabilities omit it. Financial assets also
+require `money_bucket` from `flexible`, `stable`, or `risk`; every other account
+omits it. `member_profile_id` is optional. Amounts are non-negative integer fen.
+The category must be active and have the same asset group, or liability scope, as
+the proposed account.
+
+## `assets_create_batch`
+
+Required scope: `assets:update`.
+
+Create 1 through 25 new asset accounts after one explicit confirmation covering
+the complete proposed batch. `accounts` contains the same fields as
+`assets_create`; every item requires unique account, snapshot, and idempotency
+UUIDs. Larger documents use multiple unchanged chunks. Retrying an identical
+chunk returns each account as created or replayed without duplication. This tool
+does not update accounts that already exist.
+
 ## Write receipt and errors
 
-A successful single-write result includes `replayed`. `false` means the write was
+A successful single-write result includes `replayed`. Asset creation also returns
+the created account and initial snapshot. `false` means the write was
 accepted; `true` means the exact request already succeeded. A batch result includes
 per-entry results plus `createdCount` and `replayedCount`. The server binds an
 idempotency key to the full request and connection identity, so changing any
