@@ -1,48 +1,63 @@
-# Anke Money Agent Skill
+# Anke Money Skill
 
-让支持 Agent Skills 和 Remote MCP 的 AI 助手，在用户授权后安全读取和更新 Anke Money 数据。
+[English](README.md) · [中文](README.zh-CN.md)
 
-## 安装
+Let AI assistants that support Agent Skills and Remote MCP securely read and
+update Anke Money data after the user authorizes the connection.
+
+## Installation
 
 ```bash
 npx skills add zhiqi-27/anke-money-skill --skill anke-money-agent -g
 ```
 
-安装完成后，重新打开或刷新所使用的 AI 助手，使其发现 `anke-money-agent`。
+After installation, reopen or refresh the AI assistant so it discovers
+`anke-money-agent`.
 
-## 连接 Anke Money
+## Connect Anke Money
 
-1. 在 Anke Money 中登录并进入 `Anke Skill` 页面。
-2. 创建或复制 API Key。
-3. 按 AI 助手的 MCP 配置提示连接 `anke-money`，并使用该 API Key 完成认证。
+1. Sign in to Anke Money and open the `Anke Money Skill` page.
+2. Create or copy an API Key.
+3. Follow the AI assistant's MCP configuration instructions to connect
+   `anke-money`, then authenticate with that API Key.
 
-API Key 由 Anke Money App 创建，不包含在本仓库或安装命令中。请勿把 API Key
-提交到 GitHub、写入提示词或分享给其他人；如怀疑泄露，请在 App 中重置 Key。
+The API Key is created by the Anke Money app and is never included in this
+repository or the installation command. Do not commit it to GitHub, put it in a
+prompt, or share it with anyone. If you suspect it was exposed, reset the Key
+in the app.
 
-## 支持的能力
+## Supported capabilities
 
-- 查看收支
-- 分页读取一段时间的收支与资产数据，用于 Agent 自行分析和可视化
-- 记录一笔，或在一次确认后分批记录账单文档中的多笔收支
-- 查看资产
-- 新增一个资产账户，或一次确认后批量新增资产账户及初始快照
-- 更新资产
-- 查看账单分类
-- 查看支付渠道
+- View income and spending
+- Read paginated ledger and asset data for an Agent to analyze and visualize
+- Record one entry, or batch-record multiple income and spending entries from a
+  bill document after one confirmation
+- View assets
+- Create one asset account, or batch-create asset accounts and initial snapshots
+  after one confirmation
+- Update an asset
+- View ledger categories
+- View payment channels
 
-写入账目、新增资产和更新资产前，Skill 会展示拟执行的变更并要求用户明确确认。账单文档只在
-Agent 侧解析，Anke Money 只接收确认后的结构化条目。Skill 不提供永久删除、修改历史
-账目、批量更新已有资产、整批撤销、授权管理或跨账户访问。
+Before writing ledger entries, creating assets, or updating assets, the Skill
+shows the proposed changes and requires explicit confirmation. Bill documents
+are parsed on the Agent side; Anke Money receives only the confirmed structured
+entries. The Skill does not provide permanent deletion, ledger-history edits,
+bulk updates to existing assets, batch rollback, authorization management, or
+cross-account access.
 
-## 仓库内容
+## Repository contents
 
-- `SKILL.md`：Agent 工作流与安全边界
-- `agents/openai.yaml`：Skill 展示信息与 Remote MCP 依赖
-- `references/capabilities.md`：六个权限范围、九个工具的参数和返回约定
+- `SKILL.md`: Agent workflow and safety boundaries
+- `agents/openai.yaml`: Skill display metadata and Remote MCP dependency
+- `references/capabilities.md`: six capability scopes and the parameter and
+  response contracts for nine tools
 
-后端服务、部署配置、用户数据和任何凭据均不在本仓库中。
+The backend service, deployment configuration, user data, and all credentials
+are kept out of this repository.
 
-## 当前环境
+## Current environment
 
-当前 Skill 连接 Anke Money Development MCP 服务，适合开发和测试。正式发布前会切换到
-Production 服务地址。
+The Skill currently connects to the Anke Money Development MCP service for
+development and testing. The service URL will be switched to Production before
+formal release.
