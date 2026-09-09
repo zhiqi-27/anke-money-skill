@@ -46,5 +46,5 @@ Agent 侧解析，Anke Money 只接收确认后的结构化条目。Skill 不提
 
 ## 当前环境
 
-当前 Skill 连接 Anke Money Development MCP 服务，适合开发和测试。正式发布前会切换到
-Production 服务地址。
+正式发布的 Skill 连接 Anke Money Production MCP 服务。连接地址配置在
+`agents/openai.yaml`；用户数据和 API Key 不存储在本仓库中。

@@ -58,6 +58,6 @@ are kept out of this repository.
 
 ## Current environment
 
-The Skill currently connects to the Anke Money Development MCP service for
-development and testing. The service URL will be switched to Production before
-formal release.
+Released installations of this Skill connect to the Anke Money Production MCP
+service. The endpoint is configured in `agents/openai.yaml`; user data and API
+Keys are not stored in this repository.
