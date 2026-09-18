@@ -23,11 +23,30 @@ requested interval. An asset account may additionally expose its `currencyCode`,
 `valuationQuantity`, `valuationUnitPrice`, `valuationUnit`,
 `financialAssetTypeId`, `financialProductCode`, and `stockMarketId`. These
 metadata fields are optional for older accounts. `categories_read` and
-`channels_read` accept `limit` only.
+`channels_read` accept `limit` only. Living and interest accounts may also
+expose `purchaseAmountMinor`, `purchaseCurrencyCode`, `purchaseDate`,
+`assetCondition`, `propertyAreaSquareMeters`, `vehicleModel`,
+`vehicleExteriorCondition`, and `vehicleMileageKilometers` for category-specific
+comparison. `propertyAddress` is sensitive context: keep it coarse or local and
+do not forward the exact value to an external provider without explicit owner
+permission.
 
 For a refresh, `crypto.other` and `metal.other` are not a unique product
 identity; resolve them by searching the account name and confirming a candidate
 before using a quote.
+
+For the same refresh workflow, `asset_group=living` covers direct-value fixed
+assets such as real estate and vehicles, and `asset_group=interest` covers
+photography, watches, bags, sneakers, and other interest/collectible assets.
+These groups do not expose a canonical quantity and unit-price model. The Agent
+host may search a category-specific specialist marketplace, exchange, or
+completed-transaction source using the account name and relevant safe metadata,
+then present the source, as-of time, method, confidence, and currency for owner
+confirmation. A confirmed update uses the account's total amount only; it does
+not invent valuation quantity or unit-price fields. Exact addresses, private
+notes, and images must not be sent to an external provider without explicit
+owner permission. `fixed income` remains a financial category that requires
+owner-provided information; it is not the `living` fixed-asset group.
 
 ## `ledger_create`
 
@@ -70,13 +89,19 @@ total. Optional `financial_product_code`, `financial_asset_type_id`, and
 `stock_market_id` update the corresponding identity metadata when valid for the
 account category; omitted metadata is preserved. Amounts are non-negative.
 
+For `living` and `interest` direct-value assets, omit all valuation fields and
+send only the confirmed total `amount_in_fen`. The purchase amount is historical
+context and is not a current-price input.
+
 Read the account with `assets_read` immediately before proposing the write and
 pass its `revision` as `expected_revision`. If it conflicts, do not retry the
 same proposal: read the account again and ask for a fresh confirmation. Resolve
 the account ID; never guess it. A separate confirmed update needs a new snapshot
 ID and idempotency key. The Agent host—not this MCP tool—looks up external market
-quotes and must disclose source, as-of time, quote currency, and any FX
-assumption before confirmation.
+quotes or comparable estimates and must disclose source, as-of time, method,
+confidence, quote currency, and any FX assumption before confirmation. For living
+and interest assets, prefer specialist platforms and show whether the evidence
+is an asking price, completed transaction, index, or another comparable.
 
 For example, a confirmed 10-share CNY stock update at ¥1,234.50 per share uses
 `amount_in_fen: 1234500`, `currency_code: "CNY"`,

@@ -39,7 +39,9 @@ in the app.
   bill document after one confirmation
 - View assets
 - Refresh current prices and values for confirmed stocks, funds/ETFs, digital
-  assets, and precious metals; direct-value categories remain owner-entered
+  assets, and precious metals; estimate confirmed totals for living fixed assets
+  and interest/collectible assets from category-specific specialist platforms;
+  cash and direct financial-value categories remain owner-entered
 - Create one asset account, or batch-create asset accounts and initial snapshots
   after one confirmation
 - Update an asset
@@ -51,8 +53,9 @@ shows the proposed changes and requires explicit confirmation. Bill documents
 are parsed on the Agent side; Anke Money receives only the confirmed structured
 entries. The Skill does not provide permanent deletion, ledger-history edits,
 bulk updates to existing assets, batch rollback, authorization management, or
-cross-account access. Market quote lookup is performed by the Agent host and
-must disclose its source, timestamp, quote currency, and any FX assumption.
+cross-account access. Market quote and comparable-estimate lookup is performed by
+the Agent host and must disclose its specialist source, timestamp, method,
+confidence, quote currency, and any FX assumption.
 
 ## Repository contents
 
