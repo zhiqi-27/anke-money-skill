@@ -1,6 +1,6 @@
 ---
 name: anke-money-agent
-description: Safely transfer and update one user-authorized Anke Money household through its Remote MCP tools. Use when a user asks to read or visualize financial data, turn an uploaded document into confirmed ledger entries or asset accounts, create ledger entries, create asset accounts, update one asset balance, or refresh market-valued assets with current quotes or category-specific comparable estimates. Enforces confirmation before writes, stable idempotency keys, pagination, revision checks, and narrow non-destructive operations.
+description: Safely transfer and update one user-authorized Anke Money household through its Remote MCP tools. Use when a user asks to read or visualize financial data, turn an uploaded document into confirmed ledger entries or asset accounts, create ledger entries, allocate an existing expense across months, create asset accounts, update one asset balance, or refresh market-valued assets with current quotes or category-specific comparable estimates. Enforces confirmation before writes, stable idempotency keys, pagination, revision checks, and narrow non-destructive operations.
 ---
 
 # Anke Money Skill
@@ -19,7 +19,7 @@ owner resets or revokes it.
 2. Use read tools to resolve stable category, channel, account, or ledger IDs.
    Never guess an ID. Follow `nextCursor` until `hasMore` is false when the task
    needs the complete requested period.
-3. Before `ledger_create`, `assets_create`, or `assets_update`, show the proposed change and ask
+3. Before `ledger_create`, `ledger_create_batch`, `assets_create`, or `assets_update`, show the proposed change and ask
    for explicit confirmation. Do not treat an earlier general request as that
    confirmation.
 4. For “更新下我当前的资产情况” (or an equivalent request), first retrieve all
@@ -68,24 +68,39 @@ owner resets or revokes it.
    idempotency UUID. For living and interest assets, send the confirmed total in
    `amount_in_fen` and omit quantity/unit-price valuation fields. Report
    accepted, replayed, conflicted, and skipped accounts separately.
-7. For an uploaded bill document, parse it locally in the Agent host, resolve
+7. For an existing expense the owner asks to allocate across months, first use
+   `ledger_read` to resolve exactly one source entry and retrieve all rows linked
+   to it. For a new schedule, the source must have no existing allocations; do not
+   allocate an income, an allocation row, or a source with a conflicting schedule. Propose
+   the complete 2–120 month schedule, using integer fen: divide the source amount
+   evenly and put the remainder in the first month. Each child keeps the source's
+   kind, channel, category, note, and currency, uses the matching month as both
+   `occurred_at`/`month_start`, and carries `allocation_source_id`,
+   `allocation_index`, `allocation_count`, and `allocation_start_month`. Show the
+   source, every child amount, total, first-month remainder, and start month, then
+   obtain one explicit confirmation. Call `ledger_create_batch` in unchanged
+   chunks of at most 25 children. If a transport failure leaves a partial schedule,
+   report exactly which children were accepted and resume only unchanged missing
+   children after re-reading the source and existing allocation rows; there is no
+   rollback tool.
+8. For an uploaded bill document, parse it locally in the Agent host, resolve
    categories and channels, and show one complete summary including entry count,
    income total, expense total, date range, and any uncertain rows. Never send
    the raw document to Anke Money. Obtain explicit confirmation for the complete
    proposed batch, then call `ledger_create_batch` in unchanged chunks of at most
    25 entries.
-8. Before creating assets from a document, retrieve every existing account and the
+9. Before creating assets from a document, retrieve every existing account and the
    active asset categories. Do not infer that a similarly named account is the same
    account. Show the complete proposed new-account batch, including name, kind,
    asset group, category, money bucket when applicable, initial amount, and observed
    date. After one explicit confirmation, call `assets_create_batch` in unchanged
    chunks of at most 25 accounts. Keep updates to existing accounts separate.
-9. Give every new ledger entry its own entity UUID and idempotency UUID. Give every
+10. Give every new ledger entry its own entity UUID and idempotency UUID. Give every
    new asset account its own account UUID, initial snapshot UUID, and idempotency
    UUID. Reuse an
    idempotency key only when retrying the exact same entry with every argument
    unchanged. Reuse the unchanged chunk when retrying a batch.
-10. Report created and replayed results. For multi-page reads, state the requested
+11. Report created and replayed results. For multi-page reads, state the requested
    period and whether every page was retrieved before analyzing the data.
 
 ## Safety boundaries
@@ -96,7 +111,16 @@ owner resets or revokes it.
   statement to Anke Money, update ledger history, or perform an unconfirmed bulk asset change.
 - `ledger_create` appends one entry. Do not represent it as editing history.
 - `ledger_create_batch` appends 1 through 25 independently idempotent entries.
-  It creates no import history, batch rollback, or editable server-side job.
+  It creates no import history, batch rollback, or editable server-side job. For
+  an allocation child, the server verifies the source expense, inherited fields,
+  month/index, and exact integer amount before accepting it; the complete schedule
+  is still a sequence of independently committed rows.
+- Allocation metadata is all-or-none and is valid only for an expense: the source
+  must already exist, `allocation_count` is 2 through 120, and the child amount
+  must equal the source amount divided across that schedule (first-month remainder).
+  Dependent allocation rows are read-only in the App; schedule changes go through
+  the source expense's App flow, and the Skill cannot edit or delete them. Do not
+  reuse an existing allocation index with a new ID.
 - `assets_create` atomically creates one account and its initial dated snapshot.
 - `assets_create_batch` creates 1 through 25 independently idempotent account and
   initial-snapshot pairs. It does not update existing accounts or create rollback history.

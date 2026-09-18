@@ -37,6 +37,9 @@ in the app.
 - Read paginated ledger and asset data for an Agent to analyze and visualize
 - Record one entry, or batch-record multiple income and spending entries from a
   bill document after one confirmation
+- Allocate an existing expense across 2–120 months after one confirmation; the
+  Skill writes the verified monthly allocation rows and preserves the original
+  payment
 - View assets
 - Refresh current prices and values for confirmed stocks, funds/ETFs, digital
   assets, and precious metals; estimate confirmed totals for living fixed assets
@@ -73,11 +76,11 @@ Released installations of this Skill connect to the Anke Money Production MCP
 service. The endpoint is configured in `agents/openai.yaml`; user data and API
 Keys are not stored in this repository.
 
-Anke Money 1.0 was submitted to App Review on September 10, 2026 and is waiting
-for review. The Skill package is available independently, but using it requires
-an Anke Money account, an active Anke Money Pro entitlement, and an API Key
-created inside the app. App Review submission does not mean the iOS app is
-publicly available.
+Anke Money 1.0 is publicly available on the App Store. Version 1.1 (Build 9) is
+ready to be packaged from the current app source, but it has not been uploaded
+or submitted for review. The Skill package is available independently, but
+using it requires an Anke Money account, an active Anke Money Pro entitlement,
+and an API Key created inside the app.
 
 Product information and legal documents are available at
 [money.anke-ai.com](https://money.anke-ai.com).

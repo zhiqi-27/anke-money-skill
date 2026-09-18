@@ -6,7 +6,7 @@ dependencies:
   tools:
     - type: "mcp"
       value: "anke-money"
-      description: "Nine Anke Money data-transfer and update tools"
+      description: "Nine Anke Money read, ledger, allocation, asset, and reference-data tools"
       transport: "streamable_http"
       url: "https://azfzepi6zekanwh2.azurewebsites.net/mcp"
 policy:

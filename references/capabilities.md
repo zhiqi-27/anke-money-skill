@@ -57,7 +57,14 @@ Append exactly one entry. Required arguments are `id`, `idempotency_key`,
 `amount_in_fen`. `channel_id` is required for an expense and absent for income.
 `note` is optional. UUIDs must be new for a new entry. Timestamps include a time
 zone, `month_start` is the first calendar day, and the amount is positive integer
-fen.
+fen. A monthly allocation child may additionally supply all of
+`allocation_source_id`, `allocation_index`, `allocation_count`, and
+`allocation_start_month`. For the first child of a new schedule, the source ID
+must identify an existing expense with no allocations; unchanged retries or
+missing chunks may continue that same schedule. The count is 2 through 120, the
+index is within that count, and the child's amount and month must match the
+source's exact integer schedule. The child inherits the source kind, channel,
+category, note, and currency.
 
 ## `ledger_create_batch`
 
@@ -67,8 +74,15 @@ Append 1 through 25 entries after one explicit confirmation covering the complet
 proposed batch. `entries` contains the same fields as `ledger_create`; every entry
 requires a unique entity UUID and idempotency UUID. Larger documents use multiple
 unchanged chunks. Retrying an identical chunk returns each entry as created or
-replayed without duplication. The raw source document is not a tool argument and
-must remain in the Agent host.
+replayed without duplication. Allocation schedules use the same fields and may be
+split into unchanged chunks when the schedule has more than 25 months; the
+server validates each child against the existing source and rejects a conflicting
+or duplicate index. Partial chunks are independently committed and have no
+rollback. The raw source document is not a tool argument and must remain in the
+Agent host. In MCP JSON, batch entries use the schema's camelCase names
+(`allocationSourceId`, `allocationIndex`, `allocationCount`, and
+`allocationStartMonth`); the single `ledger_create` arguments use the snake_case
+names shown above.
 
 ## `assets_update`
 

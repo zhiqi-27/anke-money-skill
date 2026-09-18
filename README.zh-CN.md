@@ -30,6 +30,7 @@ API Key 由 Anke Money App 创建，不包含在本仓库或安装命令中。�
 - 查看收支
 - 分页读取一段时间的收支与资产数据，用于 Agent 自行分析和可视化
 - 记录一笔，或在一次确认后分批记录账单文档中的多笔收支
+- 在一次确认后，将已有支出分摊到 2–120 个月；Skill 写入经过校验的每月分摊记录，保留原始支付记录
 - 查看资产
 - 在确认后刷新股票、基金/ETF、数字资产和贵金属的当前价格与价值，并通过对应专业交易平台估算固定资产（房产、车辆等）和兴趣/收藏资产的当前总价值；现金及固定收益等直接录入类资产仍需用户提供信息
 - 新增一个资产账户，或一次确认后批量新增资产账户及初始快照
@@ -56,9 +57,9 @@ Agent 侧解析，Anke Money 只接收确认后的结构化条目。Skill 不提
 正式发布的 Skill 连接 Anke Money Production MCP 服务。连接地址配置在
 `agents/openai.yaml`；用户数据和 API Key 不存储在本仓库中。
 
-Anke Money 1.0 已于 2026 年 9 月 10 日提交 App Store 审核，目前正在等待审核。
-Skill 软件包可以独立安装，但实际使用需要 Anke Money 账户、有效的 Anke Money Pro
-权益，以及在 App 内创建的 API Key。提交审核不代表 iOS App 已经公开上架。
+Anke Money 1.0 已在 App Store 公开上架。1.1（Build 9）已进入待打包阶段，尚未上传
+或提交审核。Skill 软件包可以独立安装，但实际使用需要 Anke Money 账户、有效的
+Anke Money Pro 权益，以及在 App 内创建的 API Key。
 
 产品介绍与法律文档请访问
 [money.anke-ai.com](https://money.anke-ai.com)。
