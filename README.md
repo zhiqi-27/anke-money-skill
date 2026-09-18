@@ -5,6 +5,11 @@
 Let AI assistants that support Agent Skills and Remote MCP securely read and
 update Anke Money data after the user authorizes the connection.
 
+Anke Money itself is a personal and household finance record for income,
+spending, budgets, assets, liabilities, receivables, and net worth. The Skill is
+an optional Anke Money Pro capability; it is not an autonomous financial adviser
+or a bank connection.
+
 ## Installation
 
 ```bash
@@ -33,6 +38,8 @@ in the app.
 - Record one entry, or batch-record multiple income and spending entries from a
   bill document after one confirmation
 - View assets
+- Refresh current prices and values for confirmed stocks, funds/ETFs, digital
+  assets, and precious metals; direct-value categories remain owner-entered
 - Create one asset account, or batch-create asset accounts and initial snapshots
   after one confirmation
 - Update an asset
@@ -44,7 +51,8 @@ shows the proposed changes and requires explicit confirmation. Bill documents
 are parsed on the Agent side; Anke Money receives only the confirmed structured
 entries. The Skill does not provide permanent deletion, ledger-history edits,
 bulk updates to existing assets, batch rollback, authorization management, or
-cross-account access.
+cross-account access. Market quote lookup is performed by the Agent host and
+must disclose its source, timestamp, quote currency, and any FX assumption.
 
 ## Repository contents
 
@@ -61,3 +69,12 @@ are kept out of this repository.
 Released installations of this Skill connect to the Anke Money Production MCP
 service. The endpoint is configured in `agents/openai.yaml`; user data and API
 Keys are not stored in this repository.
+
+Anke Money 1.0 was submitted to App Review on September 10, 2026 and is waiting
+for review. The Skill package is available independently, but using it requires
+an Anke Money account, an active Anke Money Pro entitlement, and an API Key
+created inside the app. App Review submission does not mean the iOS app is
+publicly available.
+
+Product information and legal documents are available at
+[money.anke-ai.com](https://money.anke-ai.com).

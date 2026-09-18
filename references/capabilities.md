@@ -19,7 +19,15 @@ source as a tool argument.
 Their result includes `nextCursor` and `hasMore`. For a complete export or report,
 keep the same date interval and pass each returned cursor until `hasMore` is false.
 Asset-account metadata is included even when its dated snapshots fall outside the
-requested interval. `categories_read` and `channels_read` accept `limit` only.
+requested interval. An asset account may additionally expose its `currencyCode`,
+`valuationQuantity`, `valuationUnitPrice`, `valuationUnit`,
+`financialAssetTypeId`, `financialProductCode`, and `stockMarketId`. These
+metadata fields are optional for older accounts. `categories_read` and
+`channels_read` accept `limit` only.
+
+For a refresh, `crypto.other` and `metal.other` are not a unique product
+identity; resolve them by searching the account name and confirming a candidate
+before using a quote.
 
 ## `ledger_create`
 
@@ -48,10 +56,33 @@ must remain in the Agent host.
 Required scope: `assets:update`.
 
 Append one dated snapshot to exactly one existing asset account. Required
-arguments are `account_id`, `snapshot_id`, `idempotency_key`, `amount_in_fen`,
-and timezone-aware `observed_at`. `member_profile_id` is optional. Resolve the
-account with `assets_read`; never guess it. A separate confirmed update needs a
-new snapshot ID and idempotency key.
+arguments are `account_id`, `snapshot_id`, `idempotency_key`,
+`expected_revision`, `amount_in_fen`, and timezone-aware `observed_at`.
+`member_profile_id` and `currency_code` are optional; when omitted, the account's
+existing currency is preserved. `amount_in_fen` is the materialized total in the
+account currency's integer minor unit, not the unit price.
+
+For stocks, funds/ETFs, digital assets, and precious metals, send
+`valuation_quantity`, `valuation_unit_price`, and `valuation_unit` together as
+decimal strings. The server checks the category-specific unit and verifies that
+quantity × unit price (rounded to the currency's minor unit) equals the supplied
+total. Optional `financial_product_code`, `financial_asset_type_id`, and
+`stock_market_id` update the corresponding identity metadata when valid for the
+account category; omitted metadata is preserved. Amounts are non-negative.
+
+Read the account with `assets_read` immediately before proposing the write and
+pass its `revision` as `expected_revision`. If it conflicts, do not retry the
+same proposal: read the account again and ask for a fresh confirmation. Resolve
+the account ID; never guess it. A separate confirmed update needs a new snapshot
+ID and idempotency key. The Agent host—not this MCP tool—looks up external market
+quotes and must disclose source, as-of time, quote currency, and any FX
+assumption before confirmation.
+
+For example, a confirmed 10-share CNY stock update at ¥1,234.50 per share uses
+`amount_in_fen: 1234500`, `currency_code: "CNY"`,
+`valuation_quantity: "10"`, `valuation_unit_price: "1234.5"`,
+`valuation_unit: "share"`, and the account's just-read `expected_revision`.
+Generate fresh `snapshot_id` and `idempotency_key` UUIDs for that update.
 
 ## `assets_create`
 
