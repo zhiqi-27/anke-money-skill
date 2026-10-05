@@ -24,7 +24,12 @@ owner resets or revokes it.
    confirmation.
 4. For “更新下我当前的资产情况” (or an equivalent request), first retrieve all
    pages from `assets_read`. Treat each `assetAccount` as the current account and
-   use its latest dated snapshot for the comparison. Include both of these
+   use its latest dated snapshot for the comparison. For interest assets, read
+   `payload.interestLifecycle.status` (missing means `inUse`). Both `inUse` and
+   `idle` remain held; exclude `sold` items from current held totals and valuation
+   proposals while retaining their history. Do not use net sale proceeds as a
+   valuation or automatically record income. Lifecycle changes are App-owner
+   operations, outside the Agent tools. Include both of these
    refreshable groups:
    - Quantity-valued financial assets: stocks, funds/ETFs, digital assets, and
      precious metals. Prefer a stored product code or specific financial asset

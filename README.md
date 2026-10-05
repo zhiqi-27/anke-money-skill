@@ -84,3 +84,7 @@ and an API Key created inside the app.
 
 Product information and legal documents are available at
 [money.anke-ai.com](https://money.anke-ai.com).
+
+Interest asset reads include held/idle/sold lifecycle information when available.
+Sold items retain history and are excluded from normal valuation proposals;
+recording or correcting sales remains an App-owner operation.

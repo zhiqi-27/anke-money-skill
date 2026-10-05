@@ -163,3 +163,15 @@ argument while reusing the key is an error.
 Invalid or revoked credentials, validation failures, and attempts to update another
 household are terminal for that call. Explain the constraint without retrying under
 a different tool or credential.
+
+## Interest asset status and sale history
+
+Asset-account reads may include `payload.interestLifecycle`: `status` is
+`inUse`, `idle`, or `sold`; sold items include `soldOn`, integer
+`netProceedsMinor`, `currencyCode`, and retained lifecycle events. An absent
+object means in use. Both in-use and idle items are held assets. Sold items
+remain readable for history and must be excluded from current held totals and
+normal valuation proposals. Do not treat net proceeds as current reference
+value or automatically create ledger income. `assets_update` rejects new
+valuation writes to sold interest items. Status changes, sale recording,
+correction, and undo are App-owner operations, outside the Agent tool surface.

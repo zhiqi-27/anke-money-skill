@@ -63,3 +63,6 @@ Anke Money Pro 权益，以及在 App 内创建的 API Key。
 
 产品介绍与法律文档请访问
 [money.anke-ai.com](https://money.anke-ai.com)。
+
+兴趣资产读取会返回已有的在用、闲置与已售出状态及售出记录。已售物品保留历史，
+不纳入正常估值更新方案；记录、修正或撤销售出仍由所有者在 App 中操作。
