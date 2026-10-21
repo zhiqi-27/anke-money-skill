@@ -51,6 +51,11 @@ in the app.
 - View ledger categories
 - View payment channels
 
+An expense can be recorded without a payment channel (“Other” / 其他); income
+has no channel. If the category list differs from the App, let the updated App
+finish synchronization and read it again. The Skill does not recreate missing
+categories or change historical category assignments.
+
 Before writing ledger entries, creating assets, or updating assets, the Skill
 shows the proposed changes and requires explicit confirmation. Bill documents
 are parsed on the Agent side; Anke Money receives only the confirmed structured

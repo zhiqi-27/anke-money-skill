@@ -54,7 +54,9 @@ Required scope: `ledger:create`.
 
 Append exactly one entry. Required arguments are `id`, `idempotency_key`,
 `kind`, `direction`, `occurred_at`, `month_start`, `category_id`, and
-`amount_in_fen`. `channel_id` is required for an expense and absent for income.
+`amount_in_fen`. `channel_id` is optional for an expense: omit it or use JSON
+`null` to represent “Other” (其他). Income must omit it or use `null`. Never send
+an empty string or invent a channel ID when the source does not identify one.
 `note` is optional. UUIDs must be new for a new entry. Timestamps include a time
 zone, `month_start` is the first calendar day, and the amount is positive integer
 fen. A monthly allocation child may additionally supply all of

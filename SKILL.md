@@ -19,6 +19,12 @@ owner resets or revokes it.
 2. Use read tools to resolve stable category, channel, account, or ledger IDs.
    Never guess an ID. Follow `nextCursor` until `hasMore` is false when the task
    needs the complete requested period.
+   An expense may omit its payment channel or use `null` (“Other” / 其他);
+   income has no channel. Never invent a channel to make an entry writable.
+   A short category list does not prove the account has no other categories.
+   If an expected category is missing, ask the owner to let the updated App
+   complete synchronization, then read again. Do not guess an ID, recreate
+   categories, or remap historical entries to bypass missing reference data.
 3. Before `ledger_create`, `ledger_create_batch`, `assets_create`, or `assets_update`, show the proposed change and ask
    for explicit confirmation. Do not treat an earlier general request as that
    confirmation.
