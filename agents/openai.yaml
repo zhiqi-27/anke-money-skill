@@ -2,12 +2,5 @@ interface:
   display_name: "Anke Money Skill"
   short_description: "Safely use one authorized Anke Money space"
   default_prompt: "Use $anke-money-agent to review my authorized Anke Money data and confirm before any write."
-dependencies:
-  tools:
-    - type: "mcp"
-      value: "anke-money"
-      description: "Nine Anke Money read, ledger, allocation, asset, and reference-data tools"
-      transport: "streamable_http"
-      url: "https://azfzepi6zekanwh2.azurewebsites.net/mcp"
 policy:
   allow_implicit_invocation: true

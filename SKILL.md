@@ -1,20 +1,38 @@
 ---
 name: anke-money-agent
-description: Safely transfer and update one user-authorized Anke Money household through its Remote MCP tools. Use when a user asks to read or visualize financial data, turn an uploaded document into confirmed ledger entries or asset accounts, create ledger entries, allocate an existing expense across months, create asset accounts, update one asset balance, or refresh market-valued assets with current quotes or category-specific comparable estimates. Enforces confirmation before writes, stable idempotency keys, pagination, revision checks, and narrow non-destructive operations.
+description: Safely read and update one authorized Anke Money household through its HTTP API, with Remote MCP optional. Use for ledger or asset analysis, confirmed bill imports, expense allocation, asset creation or valuation updates. Requires an API Key and enforces write confirmation, idempotency, pagination and revision checks.
 ---
 
 # Anke Money Skill
 
-Use the connected Anke Money MCP server as the only path for Anke Money data.
-External market or comparable-estimate lookup may happen in the Agent host only
-under the source, privacy, and confirmation rules below. The connection uses the
-owner's long-lived Anke Money API Key, which binds one identity and one household
-and enables all six Agent scopes through nine tools. It remains valid until the
-owner resets or revokes it.
+Use the Agent HTTP API by default. Installation and the owner's API Key are the
+only setup requirements; the host must be able to make HTTPS requests. Read the
+Key from `ANKE_MONEY_API_KEY` in the host's execution environment or secret settings.
+If absent, ask the user to create/copy it in Anke Money and configure it there;
+never ask them to paste the Key into chat or print its value. A terminal `export`
+applies only to that process and its children, not an already-running desktop or
+cloud assistant. Do not claim that installing this Skill configures credentials.
+
+Before making HTTP requests, read [http-api.md](references/http-api.md) for the
+fixed Production origin, route map, JSON field names and error handling. The
+operation names below identify capabilities; HTTP does not call MCP tool names.
+Use only the listed Agent endpoints, never owner/admin/sync/database APIs.
+
+An already configured Remote MCP connection is optional; use it when the user
+chooses MCP or the host cannot execute HTTP requests. Its setup is documented in
+[http-api.md](references/http-api.md#optional-remote-mcp). Do not automatically
+configure MCP or switch transports after an authentication, permission, validation
+or write failure. Preserve IDs and idempotency keys if an unchanged retry changes
+transport at the user's request. If neither path is available, stop and explain
+the missing host capability.
+
+Both paths use the same revocable owner-created Key, one household, six scopes and
+nine operations. External market or comparable-estimate lookup remains in the
+Agent host under the source, privacy and confirmation rules below.
 
 ## Workflow
 
-1. Match the request to one or more of the nine tools in
+1. Match the request to one or more of the nine operations in
    [capabilities.md](references/capabilities.md).
 2. Use read tools to resolve stable category, channel, account, or ledger IDs.
    Never guess an ID. Follow `nextCursor` until `hasMore` is false when the task
@@ -25,7 +43,7 @@ owner resets or revokes it.
    If an expected category is missing, ask the owner to let the updated App
    complete synchronization, then read again. Do not guess an ID, recreate
    categories, or remap historical entries to bypass missing reference data.
-3. Before `ledger_create`, `ledger_create_batch`, `assets_create`, or `assets_update`, show the proposed change and ask
+3. Before `ledger_create`, `ledger_create_batch`, `assets_create`, `assets_create_batch`, or `assets_update`, show the proposed change and ask
    for explicit confirmation. Do not treat an earlier general request as that
    confirmation.
 4. For “更新下我当前的资产情况” (or an equivalent request), first retrieve all
@@ -83,7 +101,7 @@ owner resets or revokes it.
    `ledger_read` to resolve exactly one source entry and retrieve all rows linked
    to it. For a new schedule, the source must have no existing allocations; do not
    allocate an income, an allocation row, or a source with a conflicting schedule. Propose
-   the complete 2–120 month schedule, using integer fen: divide the source amount
+   the complete 2–120 month schedule, using integer minor units: divide the source amount
    evenly and put the remainder in the first month. Each child keeps the source's
    kind, channel, category, note, and currency, uses the matching month as both
    `occurred_at`/`month_start`, and carries `allocation_source_id`,
@@ -116,7 +134,7 @@ owner resets or revokes it.
 
 ## Safety boundaries
 
-- Use only the nine tools exposed by the active connection.
+- Use only the nine documented Agent operations, through HTTP or optional MCP.
 - Never request, infer, or switch to another household.
 - Never permanently delete, change authorization, upload a raw bank or payment
   statement to Anke Money, update ledger history, or perform an unconfirmed bulk asset change.
@@ -144,7 +162,10 @@ owner resets or revokes it.
   the purchase amount is historical context, not the current value. Optional
   product code, financial asset type, and stock market metadata are validated
   against the account category.
-- Keep money in integer fen. Reject floating-point currency values.
+- Keep money in integer currency minor units (CNY fen for legacy households).
+  Confirm the household accounting currency before creates and preserve the
+  existing account currency for updates. Reject floating-point money and do not
+  silently convert currencies or assume every currency has two decimal places.
 - Quote and comparable-estimate discovery is an Agent-host responsibility. For
   living and interest assets, prefer a category-specific specialist platform or
   completed-transaction source. Never invent a quote or hide its source,
@@ -155,5 +176,5 @@ owner resets or revokes it.
 - If the API Key is invalid or revoked, stop and ask the user to create or reset it
   in Anke Money. Never work around it.
 
-Load [capabilities.md](references/capabilities.md) when choosing a tool or
+Load [capabilities.md](references/capabilities.md) when choosing an operation or
 constructing its arguments.

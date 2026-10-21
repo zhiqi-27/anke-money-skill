@@ -2,7 +2,7 @@
 
 [English](README.md) · 中文
 
-让支持 Agent Skills 和 Remote MCP 的 AI 助手，在用户授权后安全读取和更新 Anke Money 数据。
+让支持 Agent Skills、HTTPS 请求和安全凭据配置的 AI 助手，在用户授权后读取和更新 Anke Money 数据。默认直接调用 HTTP API，Remote MCP 可选。
 
 Anke Money 是一款个人与家庭财务记录工具，用于记录收支、预算、资产、负债、
 应收款和净资产。Skill 是可选的 Anke Money Pro 能力，不是自动执行操作的理财顾问，
@@ -16,11 +16,31 @@ npx skills add zhiqi-27/anke-money-skill --skill anke-money-agent -g
 
 安装完成后，重新打开或刷新所使用的 AI 助手，使其发现 `anke-money-agent`。
 
-## 连接 Anke Money
+## 配置 API Key
 
 1. 在 Anke Money 中登录并进入 `Anke Money Skill` 页面。
 2. 创建或复制 API Key。
-3. 按 AI 助手的 MCP 配置提示连接 `anke-money`，并使用该 API Key 完成认证。
+3. 在 AI 助手的密钥设置或运行环境中，将 Key 配置为 `ANKE_MONEY_API_KEY`。
+4. 让助手使用 `anke-money-agent`，例如“查看我本月的收支”。默认无需添加 MCP。
+
+环境变量必须对实际执行 HTTP 请求的助手进程可见。在另一个终端执行 `export`
+不会自动影响已经启动的桌面助手或云端助手。缺少 Key 时，Skill 会引导你配置，
+不会要求你把 Key 粘贴到聊天中。安装 Skill 本身不会自动配置或读取 App 中的 Key。
+
+HTTP 地址、九项操作、请求格式及错误处理见
+[HTTP API 说明](references/http-api.md)。助手需要能执行 HTTPS 请求并使用所配置的凭据。
+
+### 可选：Remote MCP
+
+如果更希望使用 MCP，或助手只能通过 MCP 连接外部服务，可自行添加：
+
+- 名称：`anke-money`
+- 类型：Streamable HTTP
+- 地址：`https://azfzepi6zekanwh2.azurewebsites.net/mcp`
+- 认证：Bearer Token，填写同一个 API Key
+
+填写 Key 的具体界面取决于客户端。HTTP 和 MCP 使用同一权限、Pro、幂等及审计边界；
+认证或权限失败时不会自动切换通道绕过检查。
 
 API Key 由 Anke Money App 创建，不包含在本仓库或安装命令中。请勿把 API Key
 提交到 GitHub、写入提示词或分享给其他人；如怀疑泄露，请在 App 中重置 Key。
@@ -51,19 +71,17 @@ Agent 侧解析，Anke Money 只接收确认后的结构化条目。Skill 不提
 ## 仓库内容
 
 - `SKILL.md`：Agent 工作流与安全边界
-- `agents/openai.yaml`：Skill 展示信息与 Remote MCP 依赖
-- `references/capabilities.md`：六个权限范围、九个工具的参数和返回约定
+- `agents/openai.yaml`：Skill 展示信息，不强制依赖 MCP
+- `references/http-api.md`：默认 HTTP 调用方式及可选 MCP 配置
+- `references/capabilities.md`：六个权限范围、九项操作的参数和返回约定
 
 后端服务、部署配置、用户数据和任何凭据均不在本仓库中。
 
 ## 当前环境
 
-正式发布的 Skill 连接 Anke Money Production MCP 服务。连接地址配置在
-`agents/openai.yaml`；用户数据和 API Key 不存储在本仓库中。
-
-Anke Money 1.0 已在 App Store 公开上架。1.1（Build 9）已进入待打包阶段，尚未上传
-或提交审核。Skill 软件包可以独立安装，但实际使用需要 Anke Money 账户、有效的
-Anke Money Pro 权益，以及在 App 内创建的 API Key。
+本软件包默认连接 Anke Money Production Agent HTTP API，可选连接 Production MCP。
+地址见 `references/http-api.md`；用户数据和 API Key 不存储在本仓库中。
+实际使用需要 Anke Money 账户、有效的 Pro 权益，以及在 App 内创建的 API Key。
 
 产品介绍与法律文档请访问
 [money.anke-ai.com](https://money.anke-ai.com)。

@@ -1,11 +1,13 @@
 # Anke Money capability reference
 
-The MCP connection uses the revocable, long-lived API Key created by the Anke Money
+HTTP and optional MCP use the revocable, long-lived API Key created by the Anke Money
 owner. The server derives the connection ID, household ID, all six scopes,
 and `skill` operation source from that credential. Never send a household ID or
-source as a tool argument.
+source as an argument. Read [http-api.md](http-api.md) before HTTP calls: the
+operation names and snake_case argument names here are logical/MCP names. HTTP
+query parameters stay snake_case, while JSON bodies use the mapped camelCase names.
 
-## Read tools
+## Read operations
 
 | Tool | Required scope | Purpose |
 | --- | --- | --- |
@@ -59,7 +61,9 @@ Append exactly one entry. Required arguments are `id`, `idempotency_key`,
 an empty string or invent a channel ID when the source does not identify one.
 `note` is optional. UUIDs must be new for a new entry. Timestamps include a time
 zone, `month_start` is the first calendar day, and the amount is positive integer
-fen. A monthly allocation child may additionally supply all of
+minor units of the household accounting currency (CNY fen for legacy households).
+Confirm that currency from current records or the owner; this API has no per-entry
+currency override. A monthly allocation child may additionally supply all of
 `allocation_source_id`, `allocation_index`, `allocation_count`, and
 `allocation_start_month`. For the first child of a new schedule, the source ID
 must identify an existing expense with no allocations; unchanged retries or
@@ -81,7 +85,7 @@ split into unchanged chunks when the schedule has more than 25 months; the
 server validates each child against the existing source and rejects a conflicting
 or duplicate index. Partial chunks are independently committed and have no
 rollback. The raw source document is not a tool argument and must remain in the
-Agent host. In MCP JSON, batch entries use the schema's camelCase names
+Agent host. All HTTP JSON bodies, and MCP batch entries, use the schema's camelCase names
 (`allocationSourceId`, `allocationIndex`, `allocationCount`, and
 `allocationStartMonth`); the single `ledger_create` arguments use the snake_case
 names shown above.
@@ -113,7 +117,7 @@ Read the account with `assets_read` immediately before proposing the write and
 pass its `revision` as `expected_revision`. If it conflicts, do not retry the
 same proposal: read the account again and ask for a fresh confirmation. Resolve
 the account ID; never guess it. A separate confirmed update needs a new snapshot
-ID and idempotency key. The Agent host—not this MCP tool—looks up external market
+ID and idempotency key. The Agent host looks up external market
 quotes or comparable estimates and must disclose source, as-of time, method,
 confidence, quote currency, and any FX assumption before confirmation. For living
 and interest assets, prefer specialist platforms and show whether the evidence
@@ -138,7 +142,8 @@ arguments are `account_id`, `snapshot_id`, `idempotency_key`, `name`, `kind`,
 `kind` is `asset` or `liability`. Assets require `asset_group` from `financial`,
 `living`, `interest`, or `receivable`; liabilities omit it. Financial assets also
 require `money_bucket` from `flexible`, `stable`, or `risk`; every other account
-omits it. `member_profile_id` is optional. Amounts are non-negative integer fen.
+omits it. `member_profile_id` is optional. Amounts are non-negative integer minor
+units of the household accounting currency; this create API has no currency override.
 The category must be active and have the same asset group, or liability scope, as
 the proposed account.
 
