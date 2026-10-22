@@ -18,14 +18,25 @@ npx skills add zhiqi-27/anke-money-skill --skill anke-money-agent -g
 
 ## 配置 API Key
 
-1. 在 Anke Money 中登录并进入 `Anke Money Skill` 页面。
-2. 创建或复制 API Key。
-3. 在 AI 助手的密钥设置或运行环境中，将 Key 配置为 `ANKE_MONEY_API_KEY`。
-4. 让助手使用 `anke-money-agent`，例如“查看我本月的收支”。默认无需添加 MCP。
+1. 安装后对助手说：**“帮我配置 Anke Money Skill”**。
+2. 在 Anke Money App 的 `Anke Money Skill` 页面创建或复制 API Key，需要有效 Pro。
+3. 助手会提供带实际安装路径的配置命令。在终端运行，在**隐藏提示**中粘贴 Key 并回车。验证成功后自动保存到系统凭据库，不需要编辑 config 或添加 MCP。
+4. 之后直接说“查看我本月的收支”。脚本自动读取已保存的 Key；写入前仍先展示完整方案，等你明确确认。
 
-环境变量必须对实际执行 HTTP 请求的助手进程可见。在另一个终端执行 `export`
-不会自动影响已经启动的桌面助手或云端助手。缺少 Key 时，Skill 会引导你配置，
-不会要求你把 Key 粘贴到聊天中。安装 Skill 本身不会自动配置或读取 App 中的 Key。
+配置命令使用 Node.js 20+，不需要安装 npm 依赖：
+
+```sh
+node "<实际 Skill 安装路径>/scripts/anke-money.mjs" setup
+```
+
+macOS 使用 Keychain，Windows 使用 Credential Manager；Linux 需要 `secret-tool`
+和已解锁的 Secret Service。请求脚本须与向导使用同一系统用户并能访问凭据库。
+详见[配置向导与调用脚本](references/client-setup.md)。安装 Skill 不会自行弹窗或读取 App 的 Key。
+
+云端助手、无终端或无法访问系统凭据库的环境，仍可在助手的安全密钥设置中配置
+`ANKE_MONEY_API_KEY`，使用同一 HTTP API。此设置优先于凭据库；不会在失败时自动换用另一个 Key。
+平台须支持安全凭据注入和 HTTPS；不会降级成明文 Key 文件。
+请勿把 Key 发到聊天中；另一个终端的 `export` 不会影响已启动的桌面或云端助手。
 
 HTTP 地址、九项操作、请求格式及错误处理见
 [HTTP API 说明](references/http-api.md)。助手需要能执行 HTTPS 请求并使用所配置的凭据。
@@ -73,6 +84,8 @@ Agent 侧解析，Anke Money 只接收确认后的结构化条目。Skill 不提
 - `SKILL.md`：Agent 工作流与安全边界
 - `agents/openai.yaml`：Skill 展示信息，不强制依赖 MCP
 - `references/http-api.md`：默认 HTTP 调用方式及可选 MCP 配置
+- `scripts/anke-money.mjs`：隐藏输入配置、连接检查、HTTP 读取及预览后确认写入
+- `references/client-setup.md`：跨平台凭据保存、调用与错误处理
 - `references/capabilities.md`：六个权限范围、九项操作的参数和返回约定
 
 后端服务、部署配置、用户数据和任何凭据均不在本仓库中。

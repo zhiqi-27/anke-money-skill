@@ -5,13 +5,25 @@ description: Safely read and update one authorized Anke Money household through 
 
 # Anke Money Skill
 
-Use the Agent HTTP API by default. Installation and the owner's API Key are the
-only setup requirements; the host must be able to make HTTPS requests. Read the
-Key from `ANKE_MONEY_API_KEY` in the host's execution environment or secret settings.
-If absent, ask the user to create/copy it in Anke Money and configure it there;
-never ask them to paste the Key into chat or print its value. A terminal `export`
-applies only to that process and its children, not an already-running desktop or
-cloud assistant. Do not claim that installing this Skill configures credentials.
+Use the Agent HTTP API by default through the bundled Node.js 20+ client
+`scripts/anke-money.mjs` (no npm dependencies). Resolve its absolute path from this
+installed Skill, not the current working directory or a guessed install path.
+Run `node "<absolute-skill-path>/scripts/anke-money.mjs" status` first. If unconfigured,
+ask the user to create/copy their Key in Anke Money and run the same script with
+`setup` in a real terminal. Give them the exact quoted command; open a user-operated
+terminal when the host supports it. The terminal prompt hides input, checks Key/Pro
+without reading financial records and saves to the system credential store. Never
+ask for the Key in chat, accept it as a command argument, or type it on the user's
+behalf. Installing the Skill does not run setup or retrieve a Key from the App.
+
+Later calls automatically read that store for the same OS user. On a headless or
+cloud host, or one without Node/system-vault access, retain direct HTTPS with
+`ANKE_MONEY_API_KEY` in the host's own secret settings. An existing variable takes
+precedence; never silently replace/fall back from it. A terminal export does not
+update an already-running desktop/cloud host. No plaintext credential-file fallback,
+MCP configuration edit or automatic credential rotation. Platform requirements and
+the setup/check/read/preview/confirm commands are in
+[client-setup.md](references/client-setup.md).
 
 Before making HTTP requests, read [http-api.md](references/http-api.md) for the
 fixed Production origin, route map, JSON field names and error handling. The
@@ -45,7 +57,14 @@ Agent host under the source, privacy and confirmation rules below.
    categories, or remap historical entries to bypass missing reference data.
 3. Before `ledger_create`, `ledger_create_batch`, `assets_create`, `assets_create_batch`, or `assets_update`, show the proposed change and ask
    for explicit confirmation. Do not treat an earlier general request as that
-   confirmation.
+   confirmation. With the bundled client, first call `request` with the complete
+   camelCase JSON body file and no `--confirm` to obtain a no-network preview and
+   SHA-256 confirmation value. Show the complete proposal to the user; only after
+   their explicit confirmation repeat that exact request with `--confirm <hash>`.
+   Any changed body, IDs, account, operation or revision needs a new preview and
+   confirmation. The hash is a content lock, not proof of human consent. One
+   confirmed full batch/schedule may cover its unchanged chunks. Hosts using direct
+   HTTPS must enforce the same human-confirmation boundary themselves.
 4. For “更新下我当前的资产情况” (or an equivalent request), first retrieve all
    pages from `assets_read`. Treat each `assetAccount` as the current account and
    use its latest dated snapshot for the comparison. For interest assets, read

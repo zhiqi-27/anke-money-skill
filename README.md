@@ -22,16 +22,30 @@ After installation, reopen or refresh the AI assistant so it discovers
 
 ## Configure the API Key
 
-1. Sign in to Anke Money and open the `Anke Money Skill` page.
-2. Create or copy an API Key.
-3. Set `ANKE_MONEY_API_KEY` in the assistant's secret settings or execution environment.
-4. Ask the assistant to use `anke-money-agent`, for example, “Review this month's
-   income and spending.” No MCP configuration is required for the default path.
+1. After installation, tell the assistant: **“Help me set up Anke Money Skill.”**
+2. Create or copy the API Key on the App's `Anke Money Skill` page. Active Pro is required.
+3. The assistant gives you the setup command with the actual installed path. Run
+   it in a terminal, paste the Key into the **hidden prompt**, and press Enter.
+   Validation and OS-vault storage are automatic; no config editing or MCP entry.
+4. Ask “Review this month's income and spending.” The client reads the saved Key
+   automatically. Every write still requires a complete proposal and your approval.
 
-The variable must be visible to the process making HTTPS requests. An `export`
-in another terminal does not update an already-running desktop or cloud assistant.
-If the Key is missing, the Skill asks you to configure it there, never to paste it
-into chat. Installing the Skill does not configure or retrieve the App's Key.
+The setup command uses Node.js 20+, with no npm dependencies:
+
+```sh
+node "<installed-skill-path>/scripts/anke-money.mjs" setup
+```
+
+macOS uses Keychain; Windows uses Credential Manager. Linux needs `secret-tool`
+and an unlocked Secret Service session. Requests must run as the same OS user
+with vault access. See [wizard and client](references/client-setup.md). Installing
+a Skill does not open a popup, run setup or retrieve the App's Key on its own.
+
+Cloud/headless/sandboxed hosts without vault access retain the secure host setting
+`ANKE_MONEY_API_KEY` and the same direct HTTP API. An explicit host setting takes
+precedence, with no fallback to another Key on failure. A host needs HTTPS and
+secure credential injection; plaintext Key files are never used. Do not paste a
+Key in chat. An export in another terminal does not update a running assistant.
 
 See [HTTP API](references/http-api.md) for the endpoint, nine operations, request
 formats and error handling. The host needs HTTPS execution and secret injection.
@@ -89,6 +103,8 @@ confidence, quote currency, and any FX assumption.
 - `SKILL.md`: Agent workflow and safety boundaries
 - `agents/openai.yaml`: Skill display metadata, without a mandatory MCP dependency
 - `references/http-api.md`: default HTTP calls and optional MCP setup
+- `scripts/anke-money.mjs`: hidden-input setup, connection check, reads and confirmed writes
+- `references/client-setup.md`: cross-platform credentials and client commands
 - `references/capabilities.md`: six capability scopes and the parameter and
   response contracts for nine operations
 

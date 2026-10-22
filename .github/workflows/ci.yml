@@ -1,0 +1,38 @@
+name: skill-client
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  client:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: [20, 22, 24]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node --test test/client.test.mjs
+      - name: Native credential store (synthetic unique target)
+        if: runner.os != 'Linux'
+        env:
+          ANKE_MONEY_TEST_NATIVE_VAULT: '1'
+        run: node --test --test-name-pattern="actual native vault" test/client.test.mjs
+  linux-vault:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: sudo apt-get update && sudo apt-get install -y libsecret-tools gnome-keyring dbus-x11
+      - name: Isolated Secret Service roundtrip
+        env:
+          ANKE_MONEY_TEST_NATIVE_VAULT: '1'
+        run: |
+          export XDG_DATA_HOME="$RUNNER_TEMP/anke-skill-vault-data"
+          export XDG_CONFIG_HOME="$RUNNER_TEMP/anke-skill-vault-config"
+          dbus-run-session -- sh -c 'printf synthetic-ci-password | gnome-keyring-daemon --unlock --components=secrets; node --test --test-name-pattern="actual native vault" test/client.test.mjs'
